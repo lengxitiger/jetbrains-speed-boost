@@ -20,6 +20,15 @@
 备份原文件 → 修改前务必复制 pycharm.vmoptions 以防翻车！
 ```
 
+```diff
+Important Reminder
+Path Explanation → The normal version is located in the PyCharm 2024.1.4\bin directory. For the magic type path, please search for it yourself (do not overwrite the original path!) 。
+
+Adjust according to computer configuration → The size of memory, the number of processor cores, and the number of concurrent threads need to be compatible with your hardware. 
+Backup the original file → Before making any modifications, make sure to copy the pycharm.vmoptions file to prevent any errors!
+```
+
+
 ### **🔧 PyCharm 性能调优核心参数表（附简易注释）**
 
 | **参数**                              | **值**                  | **作用说明**                                                                 |
@@ -42,3 +51,26 @@
 | **模块访问权限（解决插件兼容问题）** |                         |                                                                              |
 | `--add-opens=java.base/jdk.internal.org.objectweb.asm=ALL-UNNAMED` | 开放 ASM 字节码包访问 | 允许插件（如 Lombok、科学计算工具链）反射访问 JDK 内部的 ASM 库（解决“非法访问”报错） |
 | `--add-opens=java.base/jdk.internal.org.objectweb.asm.tree=ALL-UNNAMED` | 开放 ASM 树结构包访问 | 支持插件对字节码树结构的反射操作（部分高级工具依赖此权限）                   |
+
+### **🔧 PyCharm Performance Tuning Core Parameters (With Brief Notes)**
+
+| **Parameter**                              | **Value**               | **Description**                                                                 |
+|--------------------------------------------|-------------------------|---------------------------------------------------------------------------------|
+| `-Xms2048m`                                | Initial heap memory 2GB | Pre-allocates 2GB memory on PyCharm startup to avoid runtime lag from frequent memory requests. (The numbers are too large and can be confusing.)|
+| `-Xmx9216m`                                | Max heap memory 9GB     | Sets the maximum memory PyCharm can use (suitable for large Python projects like deep learning/multi-library dependencies). |
+| `-XX:ReservedCodeCacheSize=2048m`          | Code cache 2GB          | Stores JIT-compiled hotspot code to improve execution efficiency (higher values recommended for larger projects). (The numbers are too large and can be confusing.)|
+| `-XX:MaxDirectMemorySize=6G`               | Direct memory limit 6GB | Caps off-heap memory (e.g., Native memory used by scientific libraries) to prevent system resource exhaustion. |
+| `-XX:+UseG2GC`                             | Use G2 Garbage Collector| Low-latency GC (default in JDK 9+), balancing throughput and pause time for long-running PyCharm sessions. |
+| `-XX:ParallelGCThreads=12`                 | Parallel GC threads 12  | Number of threads for parallel garbage collection (recommended: 1~1.5x CPU cores, e.g., 8~12 for an 8-core CPU). |
+| `-XX:ConcGCThreads=6`                      | Concurrent GC threads 6 | Threads for concurrent phase of G2 GC (typically half of ParallelGCThreads). |
+| `-XX:+HeapDumpOnOutOfMemoryError`          | Generate heap dump on OOM | Automatically saves a memory snapshot when crashing to diagnose OOM issues. |
+| `-XX:HeapDumpPath=$USER_HOME/pycharm_error.hprof` | Heap dump file path    | Saves OOM memory snapshots in the user directory (avoids overwriting dumps from other IDEs). |
+| `-XX:ErrorFile=$USER_HOME/java_error_in_pycharm_%p.log` | JVM error log path     | Logs PyCharm crash errors to the user directory (filename includes process ID, e.g., pycharm_1234.log). |
+| `-Dfile.encoding=UTF-8`                    | File encoding UTF-8     | Ensures UTF-8 encoding for reading/writing code files to avoid Chinese/special character corruption (must-enable!). |
+| `-Dsun.jnu.encoding=UTF-8`                 | System path encoding UTF-8 | Resolves Chinese directory (e.g., D:\Projects\Datasets) display/operation issues on Windows. |
+| `-Dsun.java2d.renderer=sun.java2d.marlin.MarlinRenderingEngine` | Marlin rendering engine | Optimizes graphics rendering for high-DPI screens (e.g., 4K monitors), replacing the default renderer. |
+| `-Dsun.java2d.marlin.doChecks=false`       | Disable extra rendering checks | Boosts drawing speed (safe for stable PyCharm; set to `true` if rendering issues occur in dev builds). |
+| `-Dpython.console.encoding=UTF-8`          | Python console encoding UTF-8 | Ensures Chinese output support in PyCharm's built-in Python console (e.g., Jupyter Notebook). |
+| **Module Access (For Plugin Compatibility)** |                         |                                                                                 |
+| `--add-opens=java.base/jdk.internal.org.objectweb.asm=ALL-UNNAMED` | Open ASM bytecode package | Allows plugins (e.g., Lombok, scientific tools) to reflectively access JDK's internal ASM library (fixes "illegal access" errors). |
+| `--add-opens=java.base/jdk.internal.org.objectweb.asm.tree=ALL-UNNAMED` | Open ASM tree structure package | Enables reflective operations on bytecode tree structures (required by advanced plugins). |
