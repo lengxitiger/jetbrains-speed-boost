@@ -28,6 +28,7 @@ Adjust according to computer configuration → The size of memory, the number of
 Backup the original file → Before making any modifications, make sure to copy the pycharm.vmoptions file to prevent any errors!
 ```
 >为了更直观,我把我的电脑淘汰硬件配置传上来给大家参考
+
 >To make it more clear, I have uploaded the configuration of my old computer hardware here for everyone to refer to.
 
 ### **🖥️ My Computer Configuration (中英双语)**
@@ -45,6 +46,9 @@ Backup the original file → Before making any modifications, make sure to copy 
 | **声卡 (Sound Card)**      | 瑞昱 High Definition Audio                          | Realtek High Definition Audio                      |
 | **网卡 (Network Card)**    | 瑞昱 RTL8168/8111/8112 Gigabit Ethernet Controller  | Realtek RTL8168/8111/8112 Gigabit Ethernet Controller |
 
+>你的每一次反馈，都是让这份调优表更完美的动力～ 哪里有误的欢迎指出，我们一起努力解决问题！
+
+>Every piece of your feedback is the driving force that makes this optimization table more perfect! If you find any mistakes, please point them out. Let's work together to solve the problems!
 
 ### **🔧 PyCharm 性能调优核心参数表（附简易注释）**
 
