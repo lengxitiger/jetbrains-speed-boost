@@ -27,6 +27,23 @@ Path Explanation → The normal version is located in the PyCharm 2024.1.4\bin d
 Adjust according to computer configuration → The size of memory, the number of processor cores, and the number of concurrent threads need to be compatible with your hardware. 
 Backup the original file → Before making any modifications, make sure to copy the pycharm.vmoptions file to prevent any errors!
 ```
+>为了更直观,我把我的电脑淘汰硬件配置传上来给大家参考
+>To make it more clear, I have uploaded the configuration of my old computer hardware here for everyone to refer to.
+
+### **🖥️ My Computer Configuration (中英双语)**
+
+| **配置项 (Category)**       | **中文详情 (Chinese Details)**                     | **English Details**                                |
+|----------------------------|----------------------------------------------------|----------------------------------------------------|
+| **电脑型号 (Model)**       | X64 兼容台式电脑 (X64-Compatible Desktop)           | X64-Compatible Desktop PC                          |
+| **操作系统 (OS)**          | Windows 10 教育版 64位（Version 2004 / DirectX 12） | Windows 10 Education 64-bit (Version 2004 / DirectX 12) |
+| **处理器 (CPU)**           | 英特尔 Xeon(至强) E5-2689 0 @ 2.60GHz 八核 (X2)     | Intel Xeon (Xeon) E5-2689 0 @ 2.60GHz, 8 cores (Dual CPUs) |
+| **主板 (Motherboard)**     | Intel X79（X79 PCH -）                              | Intel X79 Chipset (X79 PCH)                        |
+| **显卡 (GPU)**             | AMD Radeon RX590 GME (8 GB / AMD)                   | AMD Radeon RX590 GME, 8GB VRAM (AMD)               |
+| **内存 (RAM)**             | 64 GB (镁光 DDR3L 1600MHz 16GB x 2)                 | 64GB (Micron DDR3L 1600MHz, 16GB × 2)              |
+| **主硬盘 (Primary Storage)** | 七彩虹 CF600 512GB TLC (512 GB / 固态硬盘)          | Colorful CF600 512GB TLC SSD (512GB, NVMe/SSD)     |
+| **显示器 (Monitor)**       | FFL0963 TCL Smart TV (52 英寸)                      | TCL Smart TV FFL0963, 52-inch                      |
+| **声卡 (Sound Card)**      | 瑞昱 High Definition Audio                          | Realtek High Definition Audio                      |
+| **网卡 (Network Card)**    | 瑞昱 RTL8168/8111/8112 Gigabit Ethernet Controller  | Realtek RTL8168/8111/8112 Gigabit Ethernet Controller |
 
 
 ### **🔧 PyCharm 性能调优核心参数表（附简易注释）**
