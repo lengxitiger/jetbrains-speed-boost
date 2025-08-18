@@ -56,9 +56,9 @@ Backup the original file → Before making any modifications, make sure to copy 
 
 | **Parameter**                              | **Value**               | **Description**                                                                 |
 |--------------------------------------------|-------------------------|---------------------------------------------------------------------------------|
-| `-Xms2048m`                                | Initial heap memory 2GB | Pre-allocates 2GB memory on PyCharm startup to avoid runtime lag from frequent memory requests. (The numbers are too large and can be confusing.)|
+| `-Xms2048m`                                | Initial heap memory 2GB | Pre-allocates 2GB memory on PyCharm startup to avoid runtime lag from frequent memory requests. (The numbers are too large and may cause a crash.)|
 | `-Xmx9216m`                                | Max heap memory 9GB     | Sets the maximum memory PyCharm can use (suitable for large Python projects like deep learning/multi-library dependencies). |
-| `-XX:ReservedCodeCacheSize=2048m`          | Code cache 2GB          | Stores JIT-compiled hotspot code to improve execution efficiency (higher values recommended for larger projects). (The numbers are too large and can be confusing.)|
+| `-XX:ReservedCodeCacheSize=2048m`          | Code cache 2GB          | Stores JIT-compiled hotspot code to improve execution efficiency (higher values recommended for larger projects). (The numbers are too large and may cause a crash.)|
 | `-XX:MaxDirectMemorySize=6G`               | Direct memory limit 6GB | Caps off-heap memory (e.g., Native memory used by scientific libraries) to prevent system resource exhaustion. |
 | `-XX:+UseG2GC`                             | Use G2 Garbage Collector| Low-latency GC (default in JDK 9+), balancing throughput and pause time for long-running PyCharm sessions. |
 | `-XX:ParallelGCThreads=12`                 | Parallel GC threads 12  | Number of threads for parallel garbage collection (recommended: 1~1.5x CPU cores, e.g., 8~12 for an 8-core CPU). |
