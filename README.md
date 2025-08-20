@@ -508,3 +508,33 @@ Backup the original file → Before making any modifications, make sure to copy 
 | `--add-opens=java.base/sun.nio.fs=ALL-UNNAMED` | Open sun.nio.fs     | Supports plugins' reflection on filesystem operations (e.g., symlinks/network paths). | Required by plugins handling file system operations (e.g., remote dev tools).    |
 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+📄 免责声明 / Disclaimer​
+(中英双语对照 / Bilingual Version - Self-Deprecating Style)
+中文版
+```diff
+⚠️ 本人非科班野生程序猿，才疏学浅，所分享的 JetBrains IDE 调优参数均来自个人实测 + 社区经验总结，非官方指南！
+
+🤣 虽然调优后我的 IDEA/PyCharm/WebStorm/GoLand/CLion 跑得飞起（亲测 3 天 6 篇爆款，CSDN 日均 2000+ 访问），但你的电脑配置、项目类型、JDK 版本可能和我完全不同——
+
+⚠️ 用前请务必备份原配置文件（Help → Edit Custom VM Options），调优后若出现卡顿加剧、插件冲突、IDE 崩溃等问题，本人概不负责！
+
+😎 欢迎各位大神在 Issue 区/评论区友好交流，但拒绝抬杠（比如"你这参数没用""我按你说的更卡了"）。
+
+🎯 本项目的核心目标是帮开发者省下折腾 IDE 的时间，多敲几行代码，少熬几根头发～
+
+📌 最后喊一句：技术无国界，但参数得看人！按需调整，理性冲浪，咱们一起让 JetBrains 全家桶真的起飞！
+```
+English Version
+```diff
+⚠️ I'm just a self-taught (non-CS-major) wild programmer with limited skills. All JetBrains IDE tuning parameters shared here are based on my personal tests + community experiences, NOT official guides！
+
+🤣 Although my IDEA/PyCharm/WebStorm/GoLand/CLion run like lightning after tuning (proven by 3 days of 6 viral posts, 2000+ daily visits on CSDN), your hardware specs, project types, and JDK versions may be totally different from mine——
+
+⚠️ BACK UP YOUR ORIGINAL CONFIGURATION FILE (Help → Edit Custom VM Options) BEFORE USING THESE PARAMS！If you encounter slower performance, plugin conflicts, or IDE crashes after tuning, I TAKE NO RESPONSIBILITY！
+
+😎 Feel free to discuss friendly in Issues/Comments, but NO ARGUING (e.g., "These params are useless" or "My IDE got slower after following your guide").
+
+🎯 The goal of this project is to save developers time on tweaking IDEs, so you can write more code and lose fewer hairs～
+
+📌 Final shoutout: Tech has no borders, but parameters depend on the user！Adjust wisely, surf rationally, and let's make the JetBrains family truly fly together！
+```
