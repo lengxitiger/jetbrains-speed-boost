@@ -275,3 +275,75 @@ Backup the original file → Before making any modifications, make sure to copy 
 |------------------------------------------|------------------|------------------------------------------------------------------------------|---------------------------------------------------------------------------------|
 | `-Djdk.attach.allowAttachSelf=true`      | 允许 JVM 自身附加  | 支持 IDE 内部工具（如热部署插件）动态附加到当前 JVM 进程                       | 某些调试/热更新插件依赖此功能                                                   |
 | `-Djdk.module.illegalAccess.silent=true` | 静默模块非法访问   | 兼容旧版库（如非模块化 jar 包）的反射调用，避免因 Java 模块化限制报错          | 使用旧版依赖（如传统工具包）时建议开启                                          |
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+### **🔧 GoLand 性能调优核心参数表（附简易注释）**
+
+#### **基础内存分配**
+| **参数**               | **值**           | **作用说明**                                                                 | **适用场景提示**                                                                 |
+|------------------------|------------------|------------------------------------------------------------------------------|---------------------------------------------------------------------------------|
+| `-Xms2048m`            | 初始堆内存 2GB   | JVM 启动时预分配的初始堆内存，避免运行时频繁申请内存导致卡顿                     | 轻量级项目可设 1024m；大型项目（如微服务）建议 ≥2048m                            |
+| `-Xmx9216m`            | 最大堆内存 9GB   | JVM 可使用的最大堆内存，直接影响 GoLand 处理大型项目的编译/运行速度            | 根据物理内存调整（建议不超过机器总内存的 1/3~1/2，如 32G 机器可设 8~12G）         |
+| `-XX:ReservedCodeCacheSize=2048m` | 代码缓存 2GB   | 存储 JIT 编译后的热点代码，避免重复编译开销                                      | 代码量大/频繁热部署项目建议 ≥2G；小项目 1G 可满足                                 |
+| `-XX:MaxDirectMemorySize=6G`   | 直接内存上限 6GB | 控制 JVM 堆外内存（如 Go 工具链 Native 库）的最大值，防止系统资源耗尽          | 使用大量堆外内存工具（如 gRPC 插件）时可适当调高；普通项目 4G 足够               |
+| `-XX:+UseG1GC`         | 使用 G1 垃圾回收器 | 低延迟垃圾回收，平衡吞吐量与停顿时间，适合 GoLand 频繁响应的场景               | 比传统 GC 更适合 IDE，减少卡顿感                                                 |
+| `-XX:ParallelGCThreads=10`     | 并行 GC 线程数 10 | 垃圾回收时使用的并行线程数（建议为 CPU 物理核心数的 1~1.5 倍）                 | 8 核 CPU 可设 8~10；12 核及以上建议 10~12                                        |
+| `-XX:ConcGCThreads=6`          | 并发 GC 线程数 6  | G1 垃圾回收的并发阶段线程数                                                      | 通常设为 ParallelGCThreads 的一半（如 10 核对应 6）                              |
+
+#### **Go 专属优化**
+| **参数**                     | **值**           | **作用说明**                                                                 | **适用场景提示**                                                                 |
+|------------------------------|------------------|------------------------------------------------------------------------------|---------------------------------------------------------------------------------|
+| `-Dgo.gopls.heap.size=6144m`   | Go 语言服务器内存 6GB | 为 Go 语言服务器（gopls）分配的专用内存，加速代码分析/补全                   | 大型 Go 项目（如微服务/高并发）必备；普通项目可适当降低                         |
+| `-Dgo.dlv.heap.size=4096m`     | 调试器内存 4GB    | 调试器（Delve）的堆内存，支持复杂断点/变量监控                               | 调试复杂 Go 应用（如多协程）时建议 ≥4G；简单项目 2G 可用                        |
+| `-Dgo.modules.index.parallelism=8` | 并行索引线程数 8  | 加速 Go Modules 依赖索引（8 线程并行），提升项目加载速度                     | 依赖多的项目（如含大量第三方库）建议 ≥8 线程                                     |
+
+#### **编码与通用设置**
+| **参数**               | **值**           | **作用说明**                                                                 | **适用场景提示**                                                                 |
+|------------------------|------------------|------------------------------------------------------------------------------|---------------------------------------------------------------------------------|
+| `-Dfile.encoding=UTF-8`            | 文件编码 UTF-8   | 确保读写代码文件时用 UTF-8，避免中文/特殊字符乱码（必开！）                  | 处理多语言项目（如中英文混合代码）时必须开启                                     |
+| `-Dsun.jnu.encoding=UTF-8`         | 系统路径编码 UTF-8 | 解决 Windows 下中文目录（如 `D:\项目\Go代码`）显示/操作乱码问题              | 中文系统用户建议开启                                                             |
+| `-XX:+HeapDumpOnOutOfMemoryError`  | OOM 时生成堆转储文件 | 内存爆炸时自动保存快照，方便排查崩溃原因                                     | 必开！遇到卡死/崩溃时通过日志定位问题                                           |
+| `-XX:HeapDumpPath=$USER_HOME/goland_oom.hprof` | 堆转储文件路径   | OOM 快照保存位置（用户目录下，避免覆盖其他 IDE 的 dump 文件）                | 自定义路径便于管理多个 IDE 的崩溃日志                                           |
+
+#### **模块访问（兼容性）**
+| **参数**                                 | **值**           | **作用说明**                                                                 | **适用场景提示**                                                                 |
+|------------------------------------------|------------------|------------------------------------------------------------------------------|---------------------------------------------------------------------------------|
+| `--add-opens=java.base/jdk.internal.org.objectweb.asm=ALL-UNNAMED` | 开放 ASM 字节码包访问 | 允许插件反射访问 JDK 内部的 ASM 库，解决“非法访问”报错                       | 若遇到插件（如 Lombok）不生效，检查是否缺少此参数                               |
+| `--add-opens=java.base/jdk.internal.org.objectweb.asm.tree=ALL-UNNAMED` | 开放 ASM 树结构包访问 | 支持插件对字节码树结构的反射操作（部分高级工具依赖此权限）                   | 通常与上一条参数配套使用                                                        |   
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+### **🔧 GoLand Performance Tuning Core Parameters (With Brief Notes)**
+
+#### **Basic Memory Allocation**
+| **Parameter**               | **Value**           | **Description**                                                                 | **Use Case Tips**                                                                 |
+|-----------------------------|---------------------|---------------------------------------------------------------------------------|-----------------------------------------------------------------------------------|
+| `-Xms2048m`                 | Initial heap 2GB    | JVM startup allocated heap to avoid runtime lag from frequent memory requests.  | Lightweight projects: 1024m; large projects (e.g., microservices): ≥2048m.       |
+| `-Xmx9216m`                 | Max heap 9GB        | Maximum JVM heap memory, directly impacts GoLand's compilation/runtime speed.   | Adjust based on physical RAM (≤1/3~1/2 of total, e.g., 8~12G for 32G machines).   |
+| `-XX:ReservedCodeCacheSize=2048m` | Code cache 2GB     | Stores JIT-compiled hotspot code to reduce redundant compilation overhead.      | ≥2G for large/TS-heavy projects; 1G for small projects.                          |
+| `-XX:MaxDirectMemorySize=6G` | Direct memory 6GB   | Caps off-heap memory (e.g., Go toolchain Native libs) to prevent exhaustion.    | Increase for gRPC plugins; 4G for general use.                                   |
+| `-XX:+UseG1GC`              | Use G1 GC           | Low-latency GC balancing throughput/pause time, ideal for IDE responsiveness.   | Better than CMS/Parallel GC for reducing lag.                                    |
+| `-XX:ParallelGCThreads=10`  | Parallel GC threads | Threads for parallel GC (recommended: 1~1.5x CPU cores, e.g., 8~10 for 8-core). | Adjust based on CPU cores (e.g., 8~10 for 8-core CPU).                           |
+| `-XX:ConcGCThreads=6`       | Concurrent GC threads | Threads for G1 concurrent phase (typically half of ParallelGCThreads).          | Usually set to half of ParallelGCThreads (e.g., 6 for 10-core).                  |
+
+#### **Go-Specific Optimizations**
+| **Parameter**                     | **Value**           | **Description**                                                                 | **Use Case Tips**                                                                 |
+|-----------------------------------|---------------------|---------------------------------------------------------------------------------|-----------------------------------------------------------------------------------|
+| `-Dgo.gopls.heap.size=6144m`      | Go server memory 6GB | Dedicated heap for Go language server (gopls) to speed up analysis/completion.  | Essential for large Go projects (e.g., microservices); adjust for smaller ones.   |
+| `-Dgo.dlv.heap.size=4096m`        | Debugger memory 4GB | Heap for debugger (Delve) to handle complex breakpoints/variables.              | ≥4G for multi-threaded debugging; 2G for simple projects.                        |
+| `-Dgo.modules.index.parallelism=8` | Parallel indexing 8 | 8 threads for indexing Go Modules dependencies, faster project load.            | ≥8 threads for projects with many third-party libs.                              |
+
+#### **Encoding & General Settings**
+| **Parameter**               | **Value**           | **Description**                                                                 | **Use Case Tips**                                                                 |
+|-----------------------------|---------------------|---------------------------------------------------------------------------------|-----------------------------------------------------------------------------------|
+| `-Dfile.encoding=UTF-8`         | File encoding UTF-8 | Ensures UTF-8 for file I/O, prevents Chinese/special character corruption.      | Must-enable for multi-language projects.                                         |
+| `-Dsun.jnu.encoding=UTF-8`      | Path encoding UTF-8 | Resolves Unicode path (e.g., Windows) display/operation issues.                 | Recommended for non-English Windows systems.                                     |
+| `-XX:+HeapDumpOnOutOfMemoryError` | OOM heap dump       | Auto-saves memory snapshot on crash to diagnose memory leaks.                   | Must-enable: Locate OOM causes via logs when GoLand freezes.                     |
+| `-XX:HeapDumpPath=$USER_HOME/goland_oom.hprof` | OOM dump path    | Saves OOM snapshots to user directory (avoids overwriting other IDE dumps).     | Custom path for easy debugging.                                                  |
+
+#### **Module Access (Compatibility)**
+| **Parameter**                                 | **Value**           | **Description**                                                                 | **Use Case Tips**                                                                 |
+|-----------------------------------------------|---------------------|---------------------------------------------------------------------------------|-----------------------------------------------------------------------------------|
+| `--add-opens=java.base/jdk.internal.org.objectweb.asm=ALL-UNNAMED` | Open ASM bytecode   | Allows plugins to reflectively access JDK's internal ASM library.               | Fix "illegal access" errors (e.g., plugins not working).                         |
+| `--add-opens=java.base/jdk.internal.org.objectweb.asm.tree=ALL-UNNAMED` | Open ASM tree      | Enables reflection on bytecode tree structures (required by advanced plugins).  | Typically used with the above ASM bytecode access.                               |
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
