@@ -396,3 +396,115 @@ Backup the original file → Before making any modifications, make sure to copy 
 |                            | `--add-opens=java.base/jdk.internal.org.objectweb.asm.tree=ALL-UNNAMED` | Open ASM tree package      | Enables reflection on bytecode tree structures (required by advanced plugins).  | Typically used with the above ASM bytecode access.                               |
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+### **🔧 CLion 性能调优核心参数表（附简易注释）**
+
+#### **基础内存分配**
+| **参数**               | **值**           | **作用说明**                                                                 | **适用场景提示**                                                                 |
+|------------------------|------------------|------------------------------------------------------------------------------|---------------------------------------------------------------------------------|
+| `-Xms1024m`            | 初始堆内存 1GB   | JVM 启动时预分配的初始堆内存，避免运行时频繁申请内存导致卡顿                     | 轻量级项目（如小型 C/C++ 程序）可设 512m；中大型项目建议 ≥1GB                    |
+| `-Xmx4096m`            | 最大堆内存 4GB   | JVM 可使用的最大堆内存，直接影响 CLion 处理大型项目的编译/运行速度             | 物理内存 ≥8GB 的机器可设 4~6GB；4GB 内存机器建议 ≤3GB                           |
+| `-XX:ReservedCodeCacheSize=1024m` | 代码缓存 1GB   | 存储 JIT 编译后的热点代码，避免重复编译开销                                      | 代码量大/频繁热部署项目建议 ≥1G；小项目 512m 可满足                              |
+| `-XX:+UseG1GC`         | 使用 G1 垃圾回收器 | 低延迟垃圾回收，平衡吞吐量与停顿时间，适合 CLion 频繁响应的场景                | 比传统 GC 更适合 IDE，减少卡顿感                                                 |
+
+#### **垃圾回收与并行**
+| **参数**               | **值**           | **作用说明**                                                                 | **适用场景提示**                                                                 |
+|------------------------|------------------|------------------------------------------------------------------------------|---------------------------------------------------------------------------------|
+| `-XX:MaxGCPauseMillis=200`     | 最大 GC 停顿时间 200ms | 控制垃圾回收时最大暂停时间，提升交互响应流畅度                                 | 值越低交互越流畅，但可能增加 GC 频率（200ms 是平衡点）                          |
+| `-XX:ParallelGCThreads=8`      | 并行 GC 线程数 8   | 垃圾回收时使用的并行线程数（建议为 CPU 物理核心数的 1~1.5 倍）                 | 4 核 CPU 可设 4~6；8 核及以上建议 8~10                                           |
+| `-XX:ConcGCThreads=4`          | 并发 GC 线程数 4   | G1 垃圾回收的并发阶段线程数                                                      | 通常设为 ParallelGCThreads 的一半（如 8 核对应 4）                              |
+| `-XX:InitiatingHeapOccupancyPercent=45` | 堆占用触发 GC 百分比 45% | 当堆内存使用率达到 45% 时启动 GC，避免内存耗尽                                 | 默认值可能过高，调低可提前触发 GC，减少卡顿                                     |
+
+#### **调试与内存保护**
+| **参数**               | **值**           | **作用说明**                                                                 | **适用场景提示**                                                                 |
+|------------------------|------------------|------------------------------------------------------------------------------|---------------------------------------------------------------------------------|
+| `-XX:+HeapDumpOnOutOfMemoryError`  | OOM 时生成堆转储文件 | 内存爆炸时自动保存快照，方便排查崩溃原因                                     | 必开！遇到卡死/崩溃时通过日志定位问题                                           |
+| `-XX:HeapDumpPath=$USER_HOME/clion_error.hprof` | 堆转储文件路径   | OOM 快照保存位置（用户目录下，避免覆盖其他 IDE 的 dump 文件）                | 自定义路径便于管理多个 IDE 的崩溃日志                                           |
+| `-XX:+AlwaysPreTouch`          | 启动时预分配内存   | 启动时预先分配所有堆内存，避免运行时动态分配卡顿                             | 适合物理内存充足的机器（如 16GB+），提升启动稳定性                              |
+| `-XX:-OmitStackTraceInFastThrow` | 禁用快速抛异常优化 | 避免 JVM 对重复异常（如空指针）省略堆栈信息，方便排查报错根源                 | 开发阶段必开！否则部分报错可能只有简单提示，难以定位                            |
+
+#### **编译与性能优化**
+| **参数**               | **值**           | **作用说明**                                                                 | **适用场景提示**                                                                 |
+|------------------------|------------------|------------------------------------------------------------------------------|---------------------------------------------------------------------------------|
+| `-XX:TieredStopAtLevel=1`      | 编译优化层级 1     | 限制 JIT 编译优化层级，加快代码启动速度（牺牲部分峰值性能）                   | 适合开发阶段频繁修改代码的场景，减少编译等待时间                                |
+| `-XX:CICompilerCount=8`        | JIT 编译器线程数 8 | 负责将热点代码编译为机器码的线程数，加速代码执行效率                         | 多核机器（如 8 核以上）可适当调高（默认 2~4），提升编译速度                     |
+| `-XX:SoftRefLRUPolicyMSPerMB=100` | 软引用缓存策略 100ms/MB | 控制软引用对象（如缓存）的存活时间（每 MB 堆内存保留 100ms）                   | 提高常用代码/数据的缓存命中率，减少重复加载                                    |
+
+#### **编码与渲染**
+| **参数**               | **值**           | **作用说明**                                                                 | **适用场景提示**                                                                 |
+|------------------------|------------------|------------------------------------------------------------------------------|---------------------------------------------------------------------------------|
+| `-Dfile.encoding=UTF-8`            | 文件编码 UTF-8   | 确保读写代码文件时用 UTF-8，避免中文/特殊字符乱码（必开！）                  | 处理多语言项目（如中英文混合代码）时必须开启                                     |
+| `-Dsun.jnu.encoding=UTF-8`         | 系统路径编码 UTF-8 | 解决 Windows 下中文目录（如 `D:\项目\CLion代码`）显示/操作乱码问题            | 中文系统用户建议开启                                                             |
+| `-Dsun.io.useCanonCaches=false`    | 禁用规范路径缓存   | 避免文件路径解析缓存导致的异常（如网络映射盘符变动）                         | 使用网络存储（如 NAS/SMB）或虚拟机共享目录时建议关闭                           |
+| `-Djdk.attach.allowAttachSelf=true` | 允许 JVM 自身附加  | 支持 IDE 内部工具（如热部署插件）动态附加到当前 JVM 进程                       | 某些调试/热更新插件依赖此功能                                                   |
+| `-Djdk.module.illegalAccess.silent=true` | 静默模块非法访问   | 兼容旧版库（如非模块化 jar 包）的反射调用，避免因 Java 模块化限制报错          | 使用旧版依赖（如传统工具包）时建议开启                                          |
+
+#### **图形渲染**
+| **参数**               | **值**           | **作用说明**                                                                 | **适用场景提示**                                                                 |
+|------------------------|------------------|------------------------------------------------------------------------------|---------------------------------------------------------------------------------|
+| `-Dsun.java2d.d3d=true`          | 启用 Direct3D 渲染 | 使用 Direct3D 加速图形绘制（适合 Windows 显卡支持的场景）                    | Windows 用户若显卡支持 Direct3D，可开启提升界面流畅度                           |
+| `-Dsun.java2d.opengl=false`      | 禁用 OpenGL 渲染   | 避免 OpenGL 渲染导致的兼容性问题（如部分显卡驱动异常）                       | 若遇到 OpenGL 渲染故障（如界面闪烁），建议关闭                                  |
+| `-Dsun.java2d.renderer=sun.java2d.marlin.MarlinRenderingEngine` | Marlin 渲染引擎 | 替换默认渲染引擎，优化高分辨率屏幕的图形绘制性能                             | 高分辨率显示器（如 4K 屏）建议开启                                              |
+
+#### **模块访问（兼容性）**
+| **参数**                                 | **值**           | **作用说明**                                                                 | **适用场景提示**                                                                 |
+|------------------------------------------|------------------|------------------------------------------------------------------------------|---------------------------------------------------------------------------------|
+| `--add-opens=java.base/java.lang=ALL-UNNAMED` | 开放 java.lang 包访问 | 允许插件反射访问 JDK 核心类库（如 java.lang.reflect），解决“非法访问”报错     | 若遇到插件（如代码分析工具）不生效，检查是否缺少此参数                          |
+| `--add-opens=java.base/sun.nio.fs=ALL-UNNAMED` | 开放 sun.nio.fs 包访问 | 支持插件对文件系统操作的反射调用（如处理符号链接/网络路径），提升兼容性       | 某些文件操作相关的插件（如远程开发工具）可能需要此权限                          |
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+### **🔧 CLion Performance Tuning Core Parameters (With Brief Notes)**
+
+#### **Basic Memory Allocation**
+| **Parameter**               | **Value**           | **Description**                                                                 | **Use Case Tips**                                                                 |
+|-----------------------------|---------------------|---------------------------------------------------------------------------------|-----------------------------------------------------------------------------------|
+| `-Xms1024m`                 | Initial heap 1GB    | JVM startup allocated heap to avoid runtime lag from frequent memory requests.  | Lightweight projects (small C/C++ apps): 512m; medium/large projects: ≥1GB.      |
+| `-Xmx4096m`                 | Max heap 4GB        | Maximum JVM heap memory, directly impacts CLion's compilation/runtime speed.    | Machines with ≥8GB RAM: 4~6GB; 4GB RAM machines: ≤3GB.                           |
+| `-XX:ReservedCodeCacheSize=1024m` | Code cache 1GB     | Stores JIT-compiled hotspot code to reduce redundant compilation overhead.      | ≥1GB for large/complex C/C++ projects; 512m for small projects.                  |
+| `-XX:+UseG1GC`              | Use G1 GC           | Low-latency GC balancing throughput/pause time, ideal for CLion responsiveness. | Better than CMS/Parallel GC for reducing IDE lag.                                |
+
+#### **Garbage Collection & Parallelism**
+| **Parameter**               | **Value**           | **Description**                                                                 | **Use Case Tips**                                                                 |
+|-----------------------------|---------------------|---------------------------------------------------------------------------------|-----------------------------------------------------------------------------------|
+| `-XX:MaxGCPauseMillis=200`  | Max GC pause 200ms  | Controls maximum GC pause time, improving interactive responsiveness.           | Lower = smoother interaction, but may increase GC frequency (200ms is balanced). |
+| `-XX:ParallelGCThreads=8`   | Parallel GC threads | Threads for parallel GC (recommended: 1~1.5x CPU cores, e.g., 4~6 for 4-core, 8~10 for 8+). | Adjust based on CPU cores (e.g., 8 for 8-core CPU).                              |
+| `-XX:ConcGCThreads=4`       | Concurrent GC threads | Threads for G1 concurrent phase (typically half of ParallelGCThreads).          | Usually half of ParallelGCThreads (e.g., 4 for 8-core).                          |
+| `-XX:InitiatingHeapOccupancyPercent=45` | Heap GC trigger 45% | Starts GC when heap usage reaches 45%, avoiding memory exhaustion.              | Default may be too high; lower to trigger GC earlier, reducing lag.              |
+
+#### **Debugging & Protection**
+| **Parameter**               | **Value**           | **Description**                                                                 | **Use Case Tips**                                                                 |
+|-----------------------------|---------------------|---------------------------------------------------------------------------------|-----------------------------------------------------------------------------------|
+| `-XX:+HeapDumpOnOutOfMemoryError` | OOM heap dump       | Auto-saves memory snapshot on crash to diagnose memory leaks.                   | Must-enable: Locate OOM causes via logs when CLion freezes.                      |
+| `-XX:HeapDumpPath=$USER_HOME/clion_error.hprof` | OOM dump path    | Saves OOM snapshots to user directory (avoids overwriting other IDE dumps).     | Custom path for easy debugging.                                                  |
+| `-XX:+AlwaysPreTouch`       | Pre-allocate memory | Pre-allocates all heap memory on startup, avoiding runtime dynamic allocation lag.| Suitable for machines with ≥16GB RAM, improves stability.                        |
+| `-XX:-OmitStackTraceInFastThrow` | Disable fast-throw  | Preserves full stack traces for repeated exceptions (e.g., NullPointerException). | Essential for debugging in development (avoids vague error messages).            |
+
+#### **Compilation & Performance**
+| **Parameter**               | **Value**           | **Description**                                                                 | **Use Case Tips**                                                                 |
+|-----------------------------|---------------------|---------------------------------------------------------------------------------|-----------------------------------------------------------------------------------|
+| `-XX:TieredStopAtLevel=1`   | Compilation level 1 | Limits JIT optimization tiers, speeding up code startup (trades peak performance). | Ideal for frequent code changes during development.                              |
+| `-XX:CICompilerCount=8`     | JIT compiler threads | Threads compiling hotspot code to machine code, accelerating execution.         | Higher for multi-core machines (≥8 cores) to boost compilation speed.            |
+| `-XX:SoftRefLRUPolicyMSPerMB=100` | Soft ref policy 100ms/MB | Controls lifetime of soft-referenced objects (e.g., caches) per MB heap.        | Improves cache hit rate for frequently used code/data.                           |
+
+#### **Encoding & Rendering**
+| **Parameter**               | **Value**           | **Description**                                                                 | **Use Case Tips**                                                                 |
+|-----------------------------|---------------------|---------------------------------------------------------------------------------|-----------------------------------------------------------------------------------|
+| `-Dfile.encoding=UTF-8`     | File encoding UTF-8 | Ensures UTF-8 for file I/O, prevents Chinese/special character corruption.      | Must-enable for multi-language projects (e.g., Chinese comments).                |
+| `-Dsun.jnu.encoding=UTF-8`  | Path encoding UTF-8 | Resolves Unicode path (e.g., Windows) display/operation issues.                 | Recommended for non-English Windows systems.                                     |
+| `-Dsun.io.useCanonCaches=false` | Disable canon caches | Avoids path resolution issues (e.g., network drive changes).                    | Use for network storage (NAS/SMB) or virtual machine shared folders.             |
+| `-Djdk.attach.allowAttachSelf=true` | Allow JVM self-attach | Supports IDE internal tools (e.g., hot-deploy plugins) attaching to current JVM. | Required by some debugging/hot-update plugins.                                   |
+| `-Djdk.module.illegalAccess.silent=true` | Silent illegal access | Allows reflection on legacy libraries (non-modular JARs) without Java module errors. | Use when relying on older dependencies (traditional toolkits).                   |
+
+#### **Graphics Rendering**
+| **Parameter**               | **Value**           | **Description**                                                                 | **Use Case Tips**                                                                 |
+|-----------------------------|---------------------|---------------------------------------------------------------------------------|-----------------------------------------------------------------------------------|
+| `-Dsun.java2d.d3d=true`     | Enable Direct3D     | Uses Direct3D for graphics acceleration (suitable for Windows with supported GPUs). | Windows users with Direct3D-capable GPUs can enable for smoother UI.             |
+| `-Dsun.java2d.opengl=false` | Disable OpenGL      | Avoids OpenGL rendering compatibility issues (e.g., driver glitches).           | Disable if encountering OpenGL-related rendering problems (e.g., flickering).    |
+| `-Dsun.java2d.renderer=sun.java2d.marlin.MarlinRenderingEngine` | Marlin renderer | Replaces default renderer, optimizing high-DPI screen drawing performance.      | Enable for 4K/Retina displays.                                                   |
+
+#### **Module Access (Compatibility)**
+| **Parameter**                                 | **Value**           | **Description**                                                                 | **Use Case Tips**                                                                 |
+|-----------------------------------------------|---------------------|---------------------------------------------------------------------------------|-----------------------------------------------------------------------------------|
+| `--add-opens=java.base/java.lang=ALL-UNNAMED` | Open java.lang      | Allows plugins to reflectively access JDK core classes (e.g., java.lang.reflect). | Fix "illegal access" errors for plugins (e.g., code analyzers).                  |
+| `--add-opens=java.base/sun.nio.fs=ALL-UNNAMED` | Open sun.nio.fs     | Supports plugins' reflection on filesystem operations (e.g., symlinks/network paths). | Required by plugins handling file system operations (e.g., remote dev tools).    |
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
