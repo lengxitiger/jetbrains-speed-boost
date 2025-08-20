@@ -508,9 +508,10 @@ Backup the original file → Before making any modifications, make sure to copy 
 | `--add-opens=java.base/sun.nio.fs=ALL-UNNAMED` | Open sun.nio.fs     | Supports plugins' reflection on filesystem operations (e.g., symlinks/network paths). | Required by plugins handling file system operations (e.g., remote dev tools).    |
 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-📄 免责声明 / Disclaimer​
-(中英双语对照 / Bilingual Version - Self-Deprecating Style)
-中文版
+>📄 免责声明 / Disclaimer​
+>(中英双语对照 / Bilingual Version - Self-Deprecating Style)
+>中文版
+
 ```diff
 ⚠️ 本人非科班野生程序猿，才疏学浅，所分享的 JetBrains IDE 调优参数均来自个人实测 + 社区经验总结，非官方指南！
 
