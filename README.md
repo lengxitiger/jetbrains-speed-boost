@@ -49,7 +49,7 @@ Backup the original file → Before making any modifications, make sure to copy 
 >你的每一次反馈，都是让这份调优表更完美的动力～ 哪里有误的欢迎指出，我们一起努力解决问题！
 
 >Every piece of your feedback is the driving force that makes this optimization table more perfect! If you find any mistakes, please point them out. Let's work together to solve the problems!
-
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ### **🔧 PyCharm 性能调优核心参数表（附简易注释）**
 
 | **参数**                              | **值**                  | **作用说明**                                                                 |
@@ -73,6 +73,7 @@ Backup the original file → Before making any modifications, make sure to copy 
 | `--add-opens=java.base/jdk.internal.org.objectweb.asm=ALL-UNNAMED` | 开放 ASM 字节码包访问 | 允许插件（如 Lombok、科学计算工具链）反射访问 JDK 内部的 ASM 库（解决“非法访问”报错） |
 | `--add-opens=java.base/jdk.internal.org.objectweb.asm.tree=ALL-UNNAMED` | 开放 ASM 树结构包访问 | 支持插件对字节码树结构的反射操作（部分高级工具依赖此权限）                   |
 
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ### **🔧 PyCharm Performance Tuning Core Parameters (With Brief Notes)**
 
 | **Parameter**                              | **Value**               | **Description**                                                                 |
@@ -128,6 +129,7 @@ Backup the original file → Before making any modifications, make sure to copy 
 | **模块访问**       | `--add-opens=java.base/jdk.internal.org.objectweb.asm=ALL-UNNAMED`  | 开放 ASM 包访问     | 允许插件（如 Lombok）通过反射访问 JDK 内部的 ASM 字节码操作库            | 若遇到 “Illegal access” 报错（如 Lombok 不生效），需添加此参数               |
 |                    | `--add-opens=java.base/jdk.internal.org.objectweb.asm.tree=ALL-UNNAMED` | 开放 ASM 树结构包访问 | 支持对字节码树结构的反射操作（部分高级插件依赖）                         | 与上一条通常配套使用                                                        |
 
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ### **🔧 IDEA Performance Tuning Core Parameters (With Brief Notes)**
 
 | **Category**               | **Parameter**                              | **Value**                  | **Description**                                                                 | **Use Case Tips**                                                                 |
@@ -160,6 +162,8 @@ Backup the original file → Before making any modifications, make sure to copy 
 | **Module Access**          | `--add-opens=java.base/jdk.internal.org.objectweb.asm=ALL-UNNAMED` | Open ASM bytecode package | Allows plugins (e.g., Lombok) to reflectively access JDK's internal ASM library. | Fix "Illegal access" errors (e.g., Lombok not working).                          |
 |                            | `--add-opens=java.base/jdk.internal.org.objectweb.asm.tree=ALL-UNNAMED` | Open ASM tree package    | Enables reflection on bytecode tree structures (required by advanced plugins).  | Typically used with the above ASM bytecode access.                               |
 
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ### **🔧 DataGrip 性能调优核心参数表（附简易注释）**
 
 #### **基础内存分配**
@@ -216,6 +220,7 @@ Backup the original file → Before making any modifications, make sure to copy 
 | `-Djdk.module.illegalAccess.silent=true` | 静默模块非法访问   | 兼容旧版库（如非模块化 jar 包）的反射调用，避免因 Java 模块化限制报错          | 使用旧版依赖（如传统工具包）时建议开启                                          |
 
 
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ### **🔧 DataGrip 性能调优核心参数表（附简易注释）**
 
 #### **基础内存分配**
