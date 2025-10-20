@@ -547,3 +547,82 @@ lose fewer hairs～
 📌 Final shoutout: Tech has no borders, but parameters depend on the user！Adjust wisely, surf rationally,
  and let's make the JetBrains family truly fly together！
 ```
+add新增
+#### 🎰RustRover参数jvm说明
+| 类别 | 参数 | 说明 |
+|------|------|------|
+| **基础内存<br>(不要太高<br>会抢系统资源)大项目<br>可适当增加** | `-Xms1024m` | 初始堆内存(1GB) |
+|  | `-Xmx4096m` | 最大堆内存(4GB) |
+|  | `-XX:MaxDirectMemorySize=2G` | 直接内存上限(2GB) |
+|  | `-XX:ReservedCodeCacheSize=1024m` | JIT代码缓存(1GB) |
+| **GC与性能** | `-XX:+UseG1GC` | 使用G1垃圾回收器 |
+|  | `-XX:ParallelGCThreads=12` | 并行GC线程数 |
+|  | `-XX:ConcGCThreads=6` | 并发GC线程数 |
+|  | `-XX:CICompilerCount=14` | JIT编译器线程数 |
+|  | `-XX:SoftRefLRUPolicyMSPerMB=1000` | 软引用回收策略 |
+| **错误处理** | `-XX:+HeapDumpOnOutOfMemoryError` | OOM时生成堆转储 |
+|  | `-XX:HeapDumpPath=$USER_HOME/` <br> `java_error_in_rustrover.hprof` | 堆转储文件路径 |
+|  | `-XX:ErrorFile=$USER_HOME/` <br> `java_error_in_rustrover_%p.log` | JVM错误日志路径 |
+|  | `-XX:-OmitStackTraceInFastThrow` | 保留完整异常堆栈 |
+| **编码配置** | `-Dfile.encoding=UTF-8` | 默认文件编码 |
+|  | `-Dsun.jnu.encoding=UTF-8` | 文件系统编码 |
+|  | `-Dconsole.encoding=UTF-8` | 控制台编码 |
+|  | `-Dsun.stdout.encoding=UTF-8` | 标准输出编码 |
+|  | `-Dsun.stderr.encoding=UTF-8` | 标准错误编码 |
+| **开发优化** | `-Didea.groovy.console.quick=true` | Groovy控制台快速模式 |
+|  | `-Dgroovy.antlr4=false` | 禁用Groovy ANTLR4 |
+|  | `-Dgroovy.grape.enable=false` | 禁用Groovy Grape |
+|  | `-Dkotlinx.coroutines.debug=off` | 关闭协程调试 |
+| **模块访问** | `--add-opens=java.base/` <br> `jdk.internal.org.objectweb.asm=ALL-UNNAMED` | 开放ASM内部包 |
+|  | `--add-opens=java.base/` <br> `jdk.internal.org.objectweb.asm.tree=ALL-UNNAMED` | 开放ASM Tree包 |
+|  | `--enable-native-access=ALL-UNNAMED` | 允许原生代码访问 |
+| **网络功能** | `-Djdk.http.auth.tunneling.disabledSchemes=""` | 允许所有HTTP隧道方案 |
+|  | `-Djdk.attach.allowAttachSelf=true` | 允许JVM自附加 |
+|  | `-Djdk.module.illegalAccess.silent=true` | 静默处理非法模块访问 |
+| **调试验证** | `-ea` | 启用断言 |
+|  | `-Dsun.io.useCanonCaches=false` | 禁用路径缓存 |
+|  | `-noverify` | 禁用字节码验证 |
+| **不推荐<br>不要设置(闪退芭比Q)** | `-Dsun.java2d.d3d=false` | 移除(图形问题) |
+|  | `-Dsun.java2d.opengl=true` | 移除(图形问题) |
+|  | `-Dsun.java2d.renderer=...` | 移除(图形问题) |
+|  | `-Dsun.java2d.marlin.doChecks=false` | 移除(图形问题) |
+
+#### 🎰 RustRover JVM Configuration Guide
+| Category | Parameter | Description |
+|----------|-----------|-------------|
+| **Basic Memory<br>(Avoid setting too high<br>to prevent system resource contention.<br>Large projects may require<br>appropriate increases)** | `-Xms1024m` | Initial heap memory (1GB) |
+|  | `-Xmx4096m` | Maximum heap memory (4GB) |
+|  | `-XX:MaxDirectMemorySize=2G` | Direct memory limit (2GB) |
+|  | `-XX:ReservedCodeCacheSize=1024m` | JIT code cache (1GB) |
+| **GC & Performance** | `-XX:+UseG1GC` | Use G1 garbage collector |
+|  | `-XX:ParallelGCThreads=12` | Parallel GC thread count |
+|  | `-XX:ConcGCThreads=6` | Concurrent GC thread count |
+|  | `-XX:CICompilerCount=14` | JIT compiler thread count |
+|  | `-XX:SoftRefLRUPolicyMSPerMB=1000` | Soft reference reclamation policy |
+| **Error Handling** | `-XX:+HeapDumpOnOutOfMemoryError` | Generate heap dump on OOM |
+|  | `-XX:HeapDumpPath=$USER_HOME/` <br> `java_error_in_rustrover.hprof` | Heap dump file path |
+|  | `-XX:ErrorFile=$USER_HOME/` <br> `java_error_in_rustrover_%p.log` | JVM error log path |
+|  | `-XX:-OmitStackTraceInFastThrow` | Preserve full exception stack traces |
+| **Encoding Configuration** | `-Dfile.encoding=UTF-8` | Default file encoding |
+|  | `-Dsun.jnu.encoding=UTF-8` | Filesystem encoding |
+|  | `-Dconsole.encoding=UTF-8` | Console encoding |
+|  | `-Dsun.stdout.encoding=UTF-8` | Standard output encoding |
+|  | `-Dsun.stderr.encoding=UTF-8` | Standard error encoding |
+| **Development Optimization** | `-Didea.groovy.console.quick=true` | Groovy console quick mode |
+|  | `-Dgroovy.antlr4=false` | Disable Groovy ANTLR4 |
+|  | `-Dgroovy.grape.enable=false` | Disable Groovy Grape |
+|  | `-Dkotlinx.coroutines.debug=off` | Disable coroutines debugging |
+| **Module Access** | `--add-opens=java.base/` <br> `jdk.internal.org.objectweb.asm=ALL-UNNAMED` | Open ASM internal packages |
+|  | `--add-opens=java.base/` <br> `jdk.internal.org.objectweb.asm.tree=ALL-UNNAMED` | Open ASM Tree packages |
+|  | `--enable-native-access=ALL-UNNAMED` | Enable native code access |
+| **Network Features** | `-Djdk.http.auth.tunneling.disabledSchemes=""` | Allow all HTTP tunneling schemes |
+|  | `-Djdk.attach.allowAttachSelf=true` | Allow JVM self-attachment |
+|  | `-Djdk.module.illegalAccess.silent=true` | Silent handling of illegal module access |
+| **Debug & Verification** | `-ea` | Enable assertions |
+|  | `-Dsun.io.useCanonCaches=false` | Disable path caching |
+|  | `-noverify` | Disable bytecode verification |
+| **Not Recommended<br>Do NOT set (may cause crashes)** | `-Dsun.java2d.d3d=false` | Remove (graphics issues) |
+|  | `-Dsun.java2d.opengl=true` | Remove (graphics issues) |
+|  | `-Dsun.java2d.renderer=...` | Remove (graphics issues) |
+|  | `-Dsun.java2d.marlin.doChecks=false` | Remove (graphics issues) |
+
